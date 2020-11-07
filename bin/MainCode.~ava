@@ -1,0 +1,181 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+
+public class MainCode {
+  public static Kartenstapel Ziehstapel = new Kartenstapel();
+  public static int kartenProSpieler = 10;
+  public static int anzReihen = 4;
+  public static Scanner input = new Scanner(System.in);
+  public static List<Kartenstapel> reihen = new ArrayList<>();
+  private static boolean karteZuKlein = false;
+  public static Kartenstapel spieler1;
+  public static Kartenstapel stapel1;
+  private static Ausgabe ausgabe = new Ausgabe();
+  
+  public static void main(String[] args) {
+    stapelErstellen();
+    System.out.println(Ziehstapel.stapel.size());
+    spieler1 = spielerErstellen(kartenProSpieler);
+    stapel1 = new Kartenstapel();
+    System.out.println("spieler erstellt");
+    //for (int i = 0; i < Ziehstapel.stapel.size(); i++) {
+    //  System.out.print(Ziehstapel.stapel.get(i).getWert()+":");
+    //  System.out.print(Ziehstapel.stapel.get(i).getPunkte()+" ");
+    //  if (i%10 == 0) {
+    //    System.out.println("\n");
+    //  }
+  //  }
+    
+    
+    System.out.println("reihen: ");
+    
+    for (int i = 0; i < anzReihen; i++) {
+      Kartenstapel reihe = new Kartenstapel();
+      Karte gezKarte = Ziehstapel.randomKarte();
+      reihe.stapel.add(gezKarte);
+      reihen.add(reihe);
+      System.out.println(gezKarte.getWert()+" "+gezKarte.getPunkte());
+    }
+    
+    ausgabe.main();
+    
+    //spielzug
+    for (int i = 0; i < kartenProSpieler; i++) {
+      
+      System.out.println("Karten auf der Hand: ");
+      for (int j = 0; j < spieler1.stapel.size(); j++) {
+        System.out.print(spieler1.stapel.get(j).getWert()+":"+spieler1.stapel.get(j).getPunkte()+" ");
+      }
+      System.out.print("\nposition der gewünschten Karte angeben: ");
+      int eingabe = input.nextInt();
+      while(eingabe > spieler1.stapel.size() || eingabe <0) {
+        System.out.println("ungültige Eingabe! geben sie die zu ersetzende Reihe erneut ein:");
+        eingabe = input.nextInt();
+      }
+      Karte gewKarte = spieler1.karteZiehen(eingabe-1);
+      System.out.println("gewählte Karte: "+gewKarte.getWert()+":"+gewKarte.getPunkte());
+      karteLegen(gewKarte);
+      if (karteZuKlein == true) {
+        System.out.println("Karte zu klein");
+        System.out.print("welche Reihe soll ersetzt werden?");
+        int ersetzteReihe = input.nextInt();
+        while(ersetzteReihe > reihen.size() || ersetzteReihe <0) {
+          System.out.println("ungültige Eingabe! geben sie die zu ersetzende Reihe erneut ein:");
+          ersetzteReihe = input.nextInt();
+        }
+        ersetzteReihe -= 1;
+        int länge = reihen.get(ersetzteReihe).stapel.size();
+        for (int j = 0; j < länge; j++) {
+          Karte verschobeneKarte = reihen.get(ersetzteReihe).stapel.get(0);
+//          System.out.println(verschobeneKarte.getWert()+" : "+verschobeneKarte.getPunkte());
+          stapel1.stapel.add(verschobeneKarte);
+          reihen.get(ersetzteReihe).stapel.remove(verschobeneKarte);
+        }
+        reihen.get(ersetzteReihe).stapel.add(gewKarte);
+        karteZuKlein = false;
+      }
+      
+      System.out.println("Reihen: ");
+      for (int j = 0; j < reihen.size(); j++) {
+        for (int k = 0; k < reihen.get(j).stapel.size(); k++) {
+          System.out.print(reihen.get(j).stapel.get(k).getWert()+":"+reihen.get(j).stapel.get(k).getPunkte()+" ");
+        }
+        System.out.println();
+      }
+      for (int j = 0; j < reihen.size(); j++) {
+        if (reihen.get(j).stapel.size() == 6) {
+          System.out.println("");
+          for (int k = 0; k < reihen.get(j).stapel.size(); k++) {
+            Karte verschobeneKarte = reihen.get(j).stapel.get(0);
+//            System.out.println(verschobeneKarte.getWert()+" : "+verschobeneKarte.getPunkte());
+            stapel1.stapel.add(verschobeneKarte);
+          }
+        }
+        
+      }
+      System.out.print("Punkte: ");
+      int summe = 0;
+      for (int j = 0; j < stapel1.stapel.size(); j++) {
+        summe += stapel1.stapel.get(i).getPunkte();
+      }
+      System.out.println(summe);
+    }
+    
+  }
+  
+  public static void stapelErstellen() {
+    for (int i = 1; i <= 104; i++) {
+      int wert = i;
+      int punkte = 0;
+      if (i%5 != 0 || i%11 != 0 || i%10 != 0) {
+        punkte = 1;
+      }
+      if(i%10 == 0 ) {
+        punkte = 3;
+      }
+      else if(i%5 ==0 && i%10 != 0) {
+        punkte = 5;
+      }
+      if (i%11 ==0) {
+        punkte = 2;
+      }
+      if (i == 55) {
+        punkte = 7;
+      }
+      Ziehstapel.addKarte(wert, punkte);
+//      System.out.print(Ziehstapel.stapel.get(i-1).getWert()+" ");
+//      System.out.println(Ziehstapel.stapel.get(i-1).getPunkte()+" ");     
+    }
+    
+  }
+  
+  private static Kartenstapel spielerErstellen(int kartenProSpieler) {
+    Kartenstapel hand = new Kartenstapel();
+    for (int i = 0; i < kartenProSpieler; i++) {
+      Karte gezKarte = Ziehstapel.randomKarte();
+      hand.stapel.add(gezKarte);
+//      System.out.println(gezKarte.getWert()+" "+gezKarte.getPunkte());
+    }
+    return hand;
+  }
+  
+  public static void karteLegen(Karte addedKarte) {
+    List<List<Integer>> differenzen = new ArrayList<>();
+    
+    for (int j = 0; j < reihen.size(); j++) {
+      Karte letzteKarte = reihen.get(j).stapel.get(reihen.get(j).stapel.size() -1);
+      int differenz = addedKarte.getWert() - letzteKarte.getWert();
+      List<Integer> index = new ArrayList<>();
+      
+      if (differenz > 0) {
+        index.add(differenz);
+        index.add(j);
+        differenzen.add(index);
+      }
+    }
+    if (differenzen.size() > 0) {
+      System.out.println(differenzen);
+      reihen.get(kleinste(differenzen)).stapel.add(addedKarte);
+      
+    }
+    else if (differenzen.size() <= 0) {
+      karteZuKlein = true;
+    
+    }
+  }
+  public static int kleinste(List<List<Integer>> zahlen){
+    List<Integer> kleinste = zahlen.get(0);
+    int kleinsteIndex = kleinste.get(1);
+    for(int i=1; i<zahlen.size(); i++){
+      if((int)zahlen.get(i).get(0) < (int)kleinste.get(0)){
+        kleinste = zahlen.get(i);
+        kleinsteIndex = kleinste.get(1);
+        System.out.println(kleinsteIndex);
+      }
+    }
+    
+    return kleinsteIndex;
+  }
+}
